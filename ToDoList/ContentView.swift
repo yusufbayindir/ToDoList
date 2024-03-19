@@ -39,7 +39,14 @@ struct ContentView: View {
                     ForEach(toDo.indices, id: \.self) { index in
                         HStack {
                             Text(toDo[index])
-                            Spacer()
+                            Spacer().onTapGesture {
+                                if checkedItems.contains(index) {
+                                    checkedItems.remove(index)
+                                } else {
+                                    checkedItems.insert(index)
+                                }
+                                
+                            }
                             if checkedItems.contains(index) {
                                 Image(systemName: "checkmark")
                             }
@@ -50,6 +57,7 @@ struct ContentView: View {
                             } else {
                                 checkedItems.insert(index)
                             }
+                            UserDefaults.standard.set(Array(checkedItems), forKey: "CheckedItems")
                         }
                     }
                     .onDelete(perform: delete)
@@ -60,6 +68,9 @@ struct ContentView: View {
             if let tempList = UserDefaults.standard.stringArray(forKey: "ToDoList"){
                 toDo = tempList
             }
+            if let temp = UserDefaults.standard.array(forKey: "CheckedItems") as? [Int] {
+                checkedItems = Set(temp)
+            }
             
         })
     }
@@ -68,7 +79,7 @@ struct ContentView: View {
         toDo.remove(atOffsets: offsets)
         UserDefaults.standard.set(toDo, forKey: "ToDoList")
         
-        // İlgili öğe silindikten sonra, checkedItems güncellenmeli
+       
         
     }
 }
