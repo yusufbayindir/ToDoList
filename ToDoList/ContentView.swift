@@ -1,24 +1,84 @@
-//
-//  ContentView.swift
-//  ToDoList
-//
-//  Created by Yusuf Bayindir on 3/19/24.
-//
-
 import SwiftUI
 
 struct ContentView: View {
+    @State var toDo = ["go", "sit", "sleep"]
+    @State var checkedItems: Set<Int> = []
+    @State private var checkSheet = false
+    @State var newNote = ""
+    
+    
+    
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+            HStack{
+                Spacer()
+                Button("Add") {
+                    checkSheet = true
+                }
+                .padding()
+                .sheet(isPresented: $checkSheet) {
+                    VStack {
+                        Spacer()
+                        TextField("New Note", text: $newNote)
+                        Spacer()
+                        Button("Add Note") {
+                            
+                            if newNote != "" {
+                                toDo.append(newNote)
+                            }
+                            UserDefaults.standard.set(toDo, forKey: "ToDoList")
+                            newNote = "" // Notu ekledikten sonra textField'i temizle
+                            checkSheet = false
+                        }
+                    }
+                    .padding()
+                }
+            }
+            NavigationStack {
+                List {
+                    ForEach(toDo.indices, id: \.self) { index in
+                        HStack {
+                            Text(toDo[index])
+                            Spacer()
+                            if checkedItems.contains(index) {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                        .onTapGesture {
+                            if checkedItems.contains(index) {
+                                checkedItems.remove(index)
+                            } else {
+                                checkedItems.insert(index)
+                            }
+                        }
+                    }
+                    .onDelete(perform: delete)
+                }.navigationTitle("To Do List")
+            }
+            
+        }.onAppear(perform: {
+            if let tempList = UserDefaults.standard.stringArray(forKey: "ToDoList"){
+                toDo = tempList
+            }
+            
+        })
+    }
+    
+    func delete(at offsets: IndexSet) {
+        toDo.remove(atOffsets: offsets)
+        UserDefaults.standard.set(toDo, forKey: "ToDoList")
+        
+        // İlgili öğe silindikten sonra, checkedItems güncellenmeli
+        
+    }
+}
+    
+    
+    
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
     }
 }
 
-#Preview {
-    ContentView()
-}
